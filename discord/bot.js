@@ -1,9 +1,12 @@
 require("dotenv").config();
 const { Client } = require("discord.js");
-
 const tnbs = new Client();
-
+const fs = require("fs");
+const  playCommand  = require("./playCommand");
 const swearWords = ["gago", "tanga", "bobo", "pakyu", "TANGINAMO"];
+const musicPrefix = "$";
+const persistentData = [];
+
 
 tnbs.login(process.env.BOT_TOKEN);
 
@@ -27,23 +30,54 @@ const getSwearWords = (message) =>{
 // tnbs.on("ready", () => {
 //   tnbs.channels.cache.get("754709929327198309").send("KAMUSTA KA TANGINA KA");
 // });
-tnbs.on("message", (message) => {
+tnbs.on("message", async (message) => {
   const arjKnife = message.guild.emojis.cache.find(
     (arj) => arj.name === "arjknife"
   );
+  if(message.channel.id === "754709929327198309"){
+    if (message.author.bot) return;
+    else if (message.content === "shit"){message.reply("cunt");} 
+    //======================
+    else if (hasSwearWords(message.content) === true) {
+      console.log(hasSwearWords(message.content));
+      message.delete({timeout:5000,reason:"TT NOT ALLOWED"});
+      message.reply(`HOY GAGO! YOU SAID "${getSwearWords(message.content)}"`);
+    }
+    else if (message.content.includes("HAROLD")) {
+      message.react(arjKnife);
+      message.reply("MALAKI NOO");
+    }
+    if(message.content.startsWith(musicPrefix)){
+      const userCommand = message.content.split(" ")[0].slice(1);
+      console.log(userCommand);
+      const channel = message.member.voice.channel;
+      switch (userCommand) {
+        case "play":
+          if(channel){
+            playCommand(channel,message,tnbs);
+          }
+          else{
+            message.reply("You are not in any voice channel")
+          }
+          break;
+        case "s":
+            channel.leave();
+          break;
+        case "join":
+            const connection = await channel.join();
+            connection.play("C:/Users/clank/coding projects/tnbs-bot/discord/hellobobo.mp3");   
+          break;
+        case "save":
+            persistentData.push(message.content.slice(5,-1));
+            message.reply(persistentData)
+          break;
+        default:
+          message.reply("Unknown command")
+          break;
+      }
+    }
+  }
 
-  if (message.author.bot) return;
-  if (message.content === "shit") message.reply("cunt");
-  //======================
-  console.log(hasSwearWords(message.content));
-  if (hasSwearWords(message.content) === true) {
-    message.delete({timeout:5000,reason:"TT NOT ALLOWED"});
-    message.reply(`HOY GAGO! YOU SAID "${getSwearWords(message.content)}"`);
-  }
-  if (message.content.includes("HAROLD")) {
-    message.react(arjKnife);
-    message.reply("MALAKI NOO");
-  }
 });
 
 tnbs.on("presenceUpdate", (oldPresence, newPresence) => {
@@ -53,7 +87,7 @@ tnbs.on("presenceUpdate", (oldPresence, newPresence) => {
   );
 
   if (oldPresence.activities != newPresence.activities) {
-    // console.log(newPresence);
+    console.log(newPresence);
     console.log(newPresence.activities);
     channel.cache
       .get("754709929327198309")
