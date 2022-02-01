@@ -2,14 +2,14 @@ require("dotenv").config();
 const { Client } = require("discord.js");
 const tnbs = new Client();
 const fs = require("fs");
-const  playCommand  = require("./playCommand");
+const  Play  = require("./playCommand");
 const swearWords = ["gago", "tanga", "bobo", "pakyu", "TANGINAMO"];
 const musicPrefix = "$";
 const persistentData = [];
 
 
 tnbs.login(process.env.BOT_TOKEN);
-
+const playService = new Play(tnbs);
 // const getSwearWords = (message) => {
 //   const wordArr = message.split(" ");
 //   const res = wordArr.map((word) => {
@@ -30,6 +30,15 @@ const getSwearWords = (message) =>{
 // tnbs.on("ready", () => {
 //   tnbs.channels.cache.get("754709929327198309").send("KAMUSTA KA TANGINA KA");
 // });
+tnbs.on("ready",()=>{
+  console.log("ready");
+  if(fs.existsSync(process.env.MUSIC_FOLDER_PATH)){
+    console.log("deleted");
+    fs.rmSync(process.env.MUSIC_FOLDER_PATH,{force:true,recursive:true})
+  }
+  fs.mkdirSync(process.env.MUSIC_FOLDER_PATH)
+  
+})
 tnbs.on("message", async (message) => {
   const arjKnife = message.guild.emojis.cache.find(
     (arj) => arj.name === "arjknife"
@@ -54,14 +63,15 @@ tnbs.on("message", async (message) => {
       switch (userCommand) {
         case "play":
           if(channel){
-            playCommand(channel,message,tnbs);
+            // playCommand(channel,message,tnbs);
+            playService.playCommand(message,channel);
           }
           else{
             message.reply("You are not in any voice channel")
           }
           break;
-        case "s":
-            channel.leave();
+        case "stop":
+            
           break;
         case "join":
             const connection = await channel.join();
