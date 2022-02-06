@@ -31,6 +31,7 @@ async function playCommand(channel,message,client){
 }
 
 
+
 class Play {
 
   /**
@@ -39,6 +40,9 @@ class Play {
   */
   songs = []
   constructor(client){
+    /**
+     * @type {Client}
+     */
     this.client = client;
   }
   /**
@@ -54,6 +58,7 @@ class Play {
     if(music === "undefined") return message.reply(`Please add title you stupid shit`);
     this.songs.push(music)
     if(this.songs.length === 1){
+      this.client.channels.cache.get(this.channelId).send(`Downloading .... ${this.songs[0]}`)
       this.songPlayer();
     }
     if(this.songs.length >1){
@@ -63,19 +68,31 @@ class Play {
   }
 
   songPlayer = async () => {
-    const music = this.songs[0]
-    const vids = await yts(music);
-    const vidUrl = vids.videos[0].url;
-    const ytMusic = ytdl(vidUrl , {filter:"audioonly"}).pipe(fs.createWriteStream(`C:/Users/clank/coding projects/tnbs-bot/discord/music/${music}.mp3`)).on("finish",()=>{
-      this.client.channels.cache.get(this.channelId).send(`Playing ${vids.videos[0].title}`)
-      console.log(this.channelId);
-      this.connection.play(ytMusic.path).on("finish",()=>{
-        this.songs.shift();
-        if(this.songs.length !=0){
-          this.songPlayer();
-        }
+    if(this.songs.length !==0){
+      const music = this.songs[0]
+      const vids = await yts(music);
+      const vidUrl = vids.videos[0].url;
+      const ytMusic = ytdl(vidUrl , {filter:"audioonly"}).pipe(fs.createWriteStream(`C:/Users/clank/coding projects/tnbs-bot/discord/music/${music}.mp3`)).on("finish",()=>{
+        this.client.channels.cache.get(this.channelId).send(`Playing ${vids.videos[0].title}`)
+        console.log(this.channelId);
+        this.connection.play(ytMusic.path).on("finish",()=>{
+          this.songs.shift();
+          if(this.songs.length !=0){
+            this.songPlayer();
+          }
+        });
       });
-    });
+    }
+  }
+  /**
+   * 
+   * @param {string} author 
+   */
+  skipSong(author){
+    this.client.channels.cache.get(this.channelId).send(`${this.songs[0]} is skipped by ${author}`)
+
+    this.songs.shift();
+    this.songPlayer();
   }
 }
 module.exports = Play

@@ -10,26 +10,14 @@ const persistentData = [];
 
 tnbs.login(process.env.BOT_TOKEN);
 const playService = new Play(tnbs);
-// const getSwearWords = (message) => {
-//   const wordArr = message.split(" ");
-//   const res = wordArr.map((word) => {
-//     const reg = new RegExp(`^${word}`, "i");
-//     return swearWords.map((sWords) => reg.test(sWords));
-//   });
-//   const finalRes = res.map((result) => result.includes(true));
-//   console.log("INITIAL RESULT", res);
-//   console.log("FINAL RESULT", finalRes);
-//   return finalRes;
-// };
+
 const hasSwearWords = (message) => {
   return swearWords.some(word => message.includes(word.toLowerCase()) ===true);
 };
 const getSwearWords = (message) =>{
   return swearWords.filter(word  => message.includes(word.toLowerCase()) ===true);
 }
-// tnbs.on("ready", () => {
-//   tnbs.channels.cache.get("754709929327198309").send("KAMUSTA KA TANGINA KA");
-// });
+
 tnbs.on("ready",()=>{
   console.log("ready");
   if(fs.existsSync(process.env.MUSIC_FOLDER_PATH)){
@@ -70,16 +58,16 @@ tnbs.on("message", async (message) => {
             message.reply("You are not in any voice channel")
           }
           break;
-        case "stop":
-            
+        case "skip":
+          playService.skipSong(message.author.username);
           break;
         case "join":
-            const connection = await channel.join();
-            connection.play("C:/Users/clank/coding projects/tnbs-bot/discord/hellobobo.mp3");   
+          const connection = await channel.join();
+          connection.play("C:/Users/clank/coding projects/tnbs-bot/discord/hellobobo.mp3");   
           break;
         case "save":
-            persistentData.push(message.content.slice(5,-1));
-            message.reply(persistentData)
+          persistentData.push(message.content.slice(5,-1));
+          message.reply(persistentData)
           break;
         default:
           message.reply("Unknown command")
